@@ -1,4 +1,5 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,41 +28,31 @@
         <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_Green.png" alt="Spotify Logo" style="width: 100%; height: auto; padding: 20px; box-sizing: border-box;">
     </div>
 
+    <!-- Welcome User -->
+    <div class="sidebar-section">
+        <span style="margin-left: 14px;" class="sidebar-link-icon">👤</span>
+        <b>Welcome, {{user.username}}</b>
+        <br>
+        <br>
 
+        <a href="/logout">
+            <span class="sidebar-link-icon">↪️</span>
+            <b>Logout</b>
+        </a>
+    </div>
 
     <!-- Top section of the sidebar -->
     <div class="sidebar-section">
-        <a href="#" class="sidebar-link active">
+        <a href="/" class="sidebar-link active">
             <span class="sidebar-link-icon">🏠</span>
             Home
         </a>
-        <a href="#" class="sidebar-link">
+        <a href="/search" class="sidebar-link">
             <span class="sidebar-link-icon">🔍</span>
             Search
         </a>
-        <a href="#" class="sidebar-link">
-            <span class="sidebar-link-icon">🎵</span>
-            Your Library
-        </a>
     </div>
 
-    <!-- Bottom section of the sidebar -->
-    <div class="sidebar-section">
-        <a href="#" class="sidebar-link active">
-            <span class="sidebar-link-icon">💜</span>
-            <span class="sidebar-link-text">Liked Songs</span>
-        </a>
-        <!-- Repeat for each item -->
-        <a href="#" class="sidebar-link">
-            <span class="sidebar-link-icon">🎶</span>
-            <span class="sidebar-link-text">African Lofi Experience</span>
-        </a>
-        <a href="#" class="sidebar-link">
-            <span class="sidebar-link-icon">🎹</span>
-            <span class="sidebar-link-text">Ayra Starr</span>
-        </a>
-        <!-- ... more links ... -->
-    </div>
 </div>
 
 
@@ -73,31 +64,38 @@
     <br>
     <br>
     <header class="header-container">
-      <div class="search-bar" style="width: 390px;">
-          <input type="search" placeholder="What do you want to listen to?" aria-label="Search">
-          <button type="submit" aria-label="Search">
-              🔍
-          </button>
-      </div>
+        <form action="search" method="POST">
+            {% csrf_token %}
+
+            <div class="search-bar" style="width: 390px;">
+                <input type="search" name="search_query" placeholder="What do you want to listen to?" aria-label="Search">
+                <button type="submit" aria-label="Search">
+                    🔍
+                </button>
+            </div>
+        </form>
     </header>
     
     <!-- Popular Tracks Section -->
     <div class="p-5">
       <br>
-      <h2 class="text-2xl font-bold mb-4">Search Results</h2>
+      <h2 class="text-2xl font-bold mb-4">Search Results ({{search_results_count}} results)</h2>
       <div class="divide-y divide-gray-800">
         <!-- Single Track Row -->
+        {% for track in track_list %}
         <div class="flex justify-between items-center py-3">
           <div class="flex items-center space-x-4">
-            <img src="https://i.scdn.co/image/ab67616d00001e02963265801aa5c9740ad159b7" alt="Song Image" class="w-12 h-12">
+            <img src="{{track.track_image}}" alt="{{track.track_name}}" class="w-12 h-12">
             <div>
-              <p class="text-base font-medium">Calm Down</p>
-              <p class="text-xs text-gray-400">Rema, Selena Gomez</p>
+              <a href="/music/{{track.trackid}}">
+                <p class="text-base font-medium">{{track.track_name}}</p>
+                <p class="text-xs text-gray-400">{{track.artist_name}}</p>
+              </a>
             </div>
           </div>
-          <div class="text-gray-400">1,182,474,314</div>
-          <div class="text-gray-400">3:59</div>
+          <div class="text-gray-400">{{track.duration}}</div>
         </div>
+        {% endfor %}
         <!-- Repeat for other tracks -->
       </div>
       <!-- <a href="#" class="text-green-500 text-sm">See more</a> -->
