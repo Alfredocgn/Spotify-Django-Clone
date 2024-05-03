@@ -115,22 +115,35 @@ def get_audio_details(query):
     audio_details = []
   return audio_details
 
-def get_track_image(track_id,track_name):
-  url = 'https://open.spotify.com/track/'+ track_id;
-  r = requests.get(url)
-  soup = bs(r.content,features='html.parser')
-  image_links_html = soup.find('img',{'alt': track_name})
-  if image_links_html:
-    image_links = image_links_html['srcset']
-    match = re.search(r'https:\/\/i\.scdn\.co\/image\/[a-zA-Z0-9]+ 640w',image_links) 
-    if match:
-      url_640w = match.group().rstrip(' 640w')
-    else:
-      url_640w = ''
-  else: 
-    url_640w =''
+def get_track_image(track_id):
+  url = "https://spotify-scraper.p.rapidapi.com/v1/track/metadata"
 
-  return url_640w
+  querystring = {"trackId":track_id}
+
+  headers = {
+    "X-RapidAPI-Key": "4b32350c31msh3283e91ec63afe3p1a7c4djsn0219f3a63597",
+    "X-RapidAPI-Host": "spotify-scraper.p.rapidapi.com"
+  }
+  try:
+    response = requests.get(url, headers=headers, params=querystring)
+    response.raise_for_status()
+    response_data = response.json()
+
+    if 'album' in response_data and 'cover' in response_data['album']:
+      track_image_url = response_data['album']['cover'][2].get('url')
+      return track_image_url
+    else:
+      print('No pic')
+      return None
+
+
+  except requests.exceptions.RequestException as e:
+    print('Error fetching data:',e)
+    return None
+
+
+  
+
 
 
 @login_required(login_url='login')
@@ -232,7 +245,7 @@ def music(request,pk):
     audio_details = get_audio_details(audio_details_query)
     audio_url = audio_details[0]
     duration_text = audio_details[1]
-    track_image = get_track_image(track_id,track_name)
+    track_image = get_track_image(track_id)
 
 
 
@@ -275,9 +288,8 @@ def profile(request,pk):
 
       for track in response_data['discography']['topTracks']:
         trackid = str(track['id'])
-        trackname = str(track['name'])
-        if get_track_image(trackid,trackname):
-          track_image = get_track_image(trackid,trackname)
+        if get_track_image(trackid):
+          track_image = get_track_image(trackid)
         else:
           track_image =''
       
@@ -339,8 +351,8 @@ def search(request):
         artist_name = track['artists'][0]['name']
         duration = track['durationText']
         trackid = track['id']
-        if get_track_image(trackid,track_name):
-          track_image = get_track_image(trackid,track_name)
+        if get_track_image(trackid):
+          track_image = get_track_image(trackid)
         else:
           track_image = ''
         
